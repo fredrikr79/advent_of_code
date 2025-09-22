@@ -2,6 +2,7 @@ package aoc2024day10
 
 import "core:fmt"
 import "core:os"
+import "core:slice"
 import "core:strconv"
 import "core:strings"
 import "core:unicode"
@@ -15,32 +16,49 @@ Grid :: struct($T: typeid) {
 	height: int,
 }
 
-gpos :: proc(g: Grid($T), i: int) -> (row: int, col: int) {
+gpos :: proc(i: int) -> (row: int, col: int) {
 	return i / g.width, i % g.width
 }
 
-gidx :: proc(g: Grid($T), row, col: int) -> (i: int) {
+gidx :: proc(row, col: int) -> (i: int) {
 	return row * g.width + col
 }
 
-gget :: proc(g: Grid($T), row, col: int) -> (value: Maybe(T)) {
-	if !(0 <= row <= g.height && 0 <= col <= g.width) do return nil
-	return g.data[gidx(g, row, col)]
+gidx_safe :: proc(row, col: int) -> (m: Maybe(int)) {
+	if !(0 <= row && row <= g.height && 0 <= col && col <= g.width) do return nil
+	return gidx(row, col)
 }
 
-gset :: proc(g: ^Grid($T), row, col: int, value: T) {
-	g^.data[gidx(g, row, col)] = value
+gget :: proc(row, col: int) -> (value: int) {
+	return g.data[gidx(row, col)]
+}
+
+gget_safe :: proc(row, col: int) -> (mvalue: Maybe(any)) {
+	if m := gidx_safe(row, col); m == nil do return nil
+	else do return g.data[m.(int)]
+}
+
+gset :: proc(row, col: int, value: $T) {
+	g.data[gidx(row, col)] = value
 }
 
 // TODO: use enumerated array
-gadj :: proc(g: Grid($T), row, col: int) -> [4]Maybe(T) {
-	return { 	//                            (0)  
-		gget(g, row - 1, col), // (0)          ^    
-		gget(g, row, col + 1), // (1)     (3)<-+->(1)
-		gget(g, row + 1, col), // (2)          v    
-		gget(g, row, col - 1), // (3)         (2)  
-	}
+gadj_idx :: proc(
+	row, col: int,
+) -> (
+	north: Maybe(int),
+	east: Maybe(int),
+	south: Maybe(int),
+	west: Maybe(int),
+) {
+	north = gidx_safe(row - 1, col)
+	east = gidx_safe(row, col + 1)
+	south = gidx_safe(row + 1, col)
+	west = gidx_safe(row, col - 1)
+	return
 }
+
+g: Grid(int)
 
 main :: proc() {
 	path := len(os.args) == 2 ? os.args[1] : EXAMPLE_INPUT_PATH
@@ -48,8 +66,8 @@ main :: proc() {
 		os.read_entire_file_from_filename(path) or_else panic("failed to read input file"),
 	)
 
-	g := parse(input)
-	fmt.println("part 1:", solve1(g))
+	g = parse(input)
+	fmt.println("part 1:", solve1())
 }
 
 parse :: proc(input: string) -> Grid(int) {
@@ -68,12 +86,25 @@ parse :: proc(input: string) -> Grid(int) {
 	return {data[:], width, height}
 }
 
-solve1 :: proc(g: Grid(int)) -> (res: int) {
-	inner :: proc(g: Grid(int), row, col: int) -> (order: int) {
+solve1 :: proc() -> (res: int) {
+	inner :: proc(row, col, cur: int) -> (score: int) {
+		n, e, s, w := gadj_idx(row, col)
+		dir: [4]Maybe(int) = {n, e, s, w}
+		directions: []int = slice.mapper(
+			slice.filter(dir[:], proc(m: Maybe(int)) -> bool {return m != nil}),
+			proc(m: Maybe(int)) -> int {return m.(int)},
+		)
+		heights: []int = slice.mapper(directions, proc(i: int) -> int {return gget(gpos(i))})
+		fmt.println(dir, directions, heights)
+		cache[gidx(row, col)] = score
 		return
 	}
 
-	cache: map[int]int
+	@(static) cache: map[int]int
+	return inner(0, 2, 0)
+}
 
-	return
+Test :: struct {
+	hello:  int,
+	method: proc(_: int) -> int,
 }
