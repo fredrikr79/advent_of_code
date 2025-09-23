@@ -22,3 +22,17 @@ $Part₁
 # 
 # we can see many awesome pieces of functional and
 # array oriented code!
+
+&fras $ input.txt
+°/$"_, _" ⍜⇌↘₁
+∧◇(⍥(⊙⊂⟜⊣\+)⋕ ⍣(
+    ⍩⊙⍜⊢(×i) °(⊂@L)
+  | ⍩⊙⍜⊢(×¯i) °(⊂@R))
+)⊙i_0⊙[]
+⌵+°ℂ ⊡⊸(⊢⍖=1⧆)⇌ ◌
+$Part₂
+# for this part, we only need to keep track of
+# each intermediate step (all our positions).
+# this by modifying the ⍥-loop to keep a log.
+# then we can find the first reoccurring position
+# using the new ⧆. 
