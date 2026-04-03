@@ -1,7 +1,7 @@
 #!/usr/bin/env nu
 def part-1 [parsed] {
   $parsed
-  | each -f {
+  | par-each {
     |row| where {|x| into string
       | split chars
       | take (($in | length) // 2)
@@ -9,7 +9,7 @@ def part-1 [parsed] {
       | try {into int} catch {0}
       | $in == $x
     }
-  } | math sum 
+  } | flatten | math sum 
 }
 
 let input = open input
