@@ -12,6 +12,11 @@ def part-1 [parsed] {
   } | flatten | math sum 
 }
 
+def part-2 [parsed] {
+  $parsed
+  | 
+}
+
 let input = open input
 let parsed = $input
            | str trim
@@ -23,4 +28,4 @@ let parsed = $input
            | into int l u
            | each {|row| $row.l..$row.u}
 
-timeit {print (part-1 $parsed)}
+part-2 ($input | str trim | split row ',' | split column '-' | rename l u | into int l u)
